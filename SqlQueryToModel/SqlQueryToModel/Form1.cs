@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -22,15 +23,23 @@ namespace SqlQueryToModel
             string result = "";
             var query = txtSQLQuery.Text;
 
-            query = query.ToLower();
+            //query = query.ToLower();
 
             //Remove select
-            query = query.Replace("select", "");
-
+            query = Regex.Replace(query, "(?i)select", "");
+            
             //If contains from, then remove
-            if (query.Contains("from"))
+            if (query.ToLower().Contains("from"))
             {
-                query = query.Substring(0,query.IndexOf("from"));
+                int indexOfFrom = query.ToLower().IndexOf("from");
+                query = query.Substring(0, indexOfFrom);
+            }
+
+            //If contains into, then remove
+            if (query.ToLower().Contains("into"))
+            {
+                int indexOfInto = query.ToLower().IndexOf("into");
+                query = query.Substring(0, indexOfInto);
             }
 
             //Get the propertys
@@ -40,6 +49,12 @@ namespace SqlQueryToModel
             {
                 string property = "",propName = item,dataType = "int";
 
+                if (item.Contains("."))
+                {
+                    int indexOfDot = item.IndexOf(".");
+                    propName = item.Substring(indexOfDot, item.Length - indexOfDot).Replace(".","");
+                }
+
                 if (item.Contains("$"))
                 {
                     dataType = item.Substring(item.IndexOf("$"), item.Length - item.IndexOf("$"));
@@ -47,13 +62,13 @@ namespace SqlQueryToModel
                 }
 
                 //If contains alias, then get alias' name
-                if (item.Contains(" as "))
+                if (item.ToLower().Contains(" as "))
                 {
-                    propName = item.Substring(item.IndexOf(" as "), item.Contains("$") ?
-                        item.IndexOf("$") - item.IndexOf(" as ") :
-                        item.Length - item.IndexOf(" as "));
+                    propName = item.Substring(item.ToLower().IndexOf(" as "), item.Contains("$") ?
+                        item.IndexOf("$") - item.ToLower().IndexOf(" as ") :
+                        item.Length - item.ToLower().IndexOf(" as "));
 
-                    propName = propName.Replace(" as ", "");
+                    propName = propName.ToLower().Replace(" as ", "");
                 }
 
                 propName = propName.Trim();
