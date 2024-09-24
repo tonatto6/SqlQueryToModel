@@ -68,7 +68,24 @@ namespace SqlQueryToModel
                         item.IndexOf("$") - item.ToLower().IndexOf(" as ") :
                         item.Length - item.ToLower().IndexOf(" as "));
 
-                    propName = propName.ToLower().Replace(" as ", "");
+                    propName = propName.Replace(" as ", "");
+                    propName = propName.Replace(" AS ", "");
+                }
+                else
+                {
+                    if (item.Contains("$"))
+                    {
+                        propName = propName.Substring(0, propName.IndexOf("$"));
+                    }
+
+                    propName = propName.Trim();
+
+                    //string pattern = @"^\p{L}+ \p{L}+$";
+                    string pattern = @"^[\p{L}_]+ [\p{L}_]+$";
+                    if (Regex.IsMatch(propName, pattern))
+                    {
+                        propName = propName.Substring(propName.IndexOf(" "), propName.Length - propName.IndexOf(" "));
+                    }
                 }
 
                 propName = propName.Trim();
